@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<title>Moneyshort — Earn by Sharing</title>
+<style>
+:root{--bg:#0b1220;--panel:#121d30;--panel2:#17243a;--text:#f4f7fb;--muted:#9eacc2;--line:#263650;--green:#35d39a;--blue:#6ea8ff;--danger:#ff7b7b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% -10%,#1d3a5c 0,transparent 36%),var(--bg);font-family:Inter,system-ui,Arial,sans-serif;color:var(--text)}
+button,input{font:inherit}.wrap{max-width:1080px;margin:auto;padding:20px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0 22px}.brand{font-size:24px;font-weight:850;letter-spacing:-.8px}.brand span{color:var(--green)}.tag{color:var(--muted);font-size:12px}.actions{display:flex;gap:8px}.btn{border:0;border-radius:12px;padding:11px 16px;font-weight:750;cursor:pointer}.primary{background:var(--green);color:#062219}.secondary{background:#20304a;color:var(--text);border:1px solid var(--line)}.hero{padding:30px 0 26px;max-width:720px}.eyebrow{color:var(--green);font-size:12px;font-weight:800;letter-spacing:1.6px;text-transform:uppercase}.hero h1{font-size:clamp(34px,6vw,56px);line-height:1.04;letter-spacing:-1.8px;margin:12px 0}.hero p{color:var(--muted);font-size:16px;line-height:1.65;margin:0}.notice{margin:18px 0;padding:12px 14px;border:1px solid #5a4a24;background:#2a2519;color:#f5dca0;border-radius:12px;font-size:13px;line-height:1.5}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}.stat,.panel{background:linear-gradient(145deg,var(--panel),#101a2b);border:1px solid var(--line);border-radius:18px;padding:18px}.stat small{color:var(--muted);display:block;font-size:12px}.stat strong{display:block;font-size:26px;margin-top:8px}.panel{margin:14px 0}.panel h2{font-size:18px;margin:0 0 6px}.sub{color:var(--muted);font-size:13px;margin:0 0 16px}.field{display:flex;gap:9px}.field input,.auth input{width:100%;background:#0b1423;border:1px solid var(--line);border-radius:12px;padding:14px;color:var(--text);outline:none}.field input:focus,.auth input:focus{border-color:var(--green)}.field button{white-space:nowrap}.result{display:none;margin-top:12px;padding:12px;background:#0b1423;border:1px solid var(--line);border-radius:12px;overflow-wrap:anywhere}.result a{color:var(--green)}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:440px}th,td{text-align:left;padding:12px 8px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-weight:600}.pill{font-size:11px;border-radius:20px;padding:5px 9px;background:#23364c;color:#c7d8ec}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.step{background:var(--panel2);padding:14px;border-radius:14px}.step b{display:block;margin-bottom:6px}.step p{color:var(--muted);font-size:12px;line-height:1.5;margin:0}.footer{color:var(--muted);font-size:12px;text-align:center;padding:24px 0 12px}.modal{display:none;position:fixed;inset:0;background:#000b;align-items:center;justify-content:center;padding:18px}.auth{width:min(420px,100%);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}.auth input{margin:7px 0}.auth .btn{width:100%;margin-top:9px}.close{float:right;background:none;border:0;color:var(--muted);font-size:22px;cursor:pointer}
+@media(max-width:680px){.wrap{padding:15px}.grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr}.field{flex-direction:column}.field button{width:100%}.top{align-items:flex-start}.tag{display:none}.hero{padding-top:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div><div class="brand">Money<span>short</span></div><div class="tag">Short links. Share more. Earn rewards.</div></div>
+    <div class="actions" id="authActions"><button class="btn secondary" onclick="openAuth('login')">Login</button><button class="btn primary" onclick="openAuth('register')">Sign up</button></div>
+     <div class="actions" id="userActions" style="display:none"><span class="tag" id="userEmail"></span><button class="btn secondary" onclick="logoutUser()">Log out</button></div>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">Your link sharing dashboard</div>
+    <h1>Turn your links into earning opportunities.</h1>
+    <p>Create short links, share them with your audience, and track visits and rewards from one simple dashboard.</p>
+  </section>
+
+  <div class="notice" id="statusNotice"><b>Account system:</b> Sign up or log in to access your account. Link shortening, verified visits and withdrawals still require their own secure API/backend integration.</div>
+
+  <section class="grid">
+    <div class="stat"><small>Total visits</small><strong id="visits">0</strong></div>
+    <div class="stat"><small>Your earnings</small><strong id="earnings">$0.00</strong></div>
+    <div class="stat"><small>Active short links</small><strong id="links">0</strong></div>
+  </section>
+
+  <section class="panel">
+    <h2>Create a short link</h2>
+    <p class="sub">Paste the full destination URL below. Provider API connection will be added through a secure Worker.</p>
+    <div class="field"><input id="destination" type="url" placeholder="https://example.com/your-page"><button class="btn primary" onclick="createLink()">Shorten link</button></div>
+    <div class="result" id="result"></div>
+  </section>
+
+  <section class="panel">
+    <div class="row"><div><h2>Your links</h2><p class="sub">Your recent shortened links will appear here.</p></div><span class="pill">Demo data</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Destination</th><th>Short link</th><th>Visits</th><th>Status</th></tr></thead><tbody id="linkRows"><tr><td colspan="4" style="color:#9eacc2">No links created yet.</td></tr></tbody></table></div>
+  </section>
+
+  <section class="panel">
+    <h2>How Moneyshort works</h2><p class="sub">A simple three-step process.</p>
+    <div class="steps">
+      <div class="step"><b>1. Create links</b><p>Paste a destination URL and generate a short link.</p></div>
+      <div class="step"><b>2. Share with people</b><p>Share your links where your audience is allowed to visit them.</p></div>
+      <div class="step"><b>3. Track rewards</b><p>Eligible visits and earnings will be shown after provider tracking is connected.</p></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Withdraw rewards</h2><p class="sub">Withdrawal methods and minimum payout will be configured before launch.</p>
+    <div class="row"><span style="color:var(--muted);font-size:13px">Available balance</span><b>$0.00</b></div>
+    <button class="btn secondary" style="margin-top:14px" onclick="alert('Withdrawals will be enabled after the secure backend is connected.')">Request withdrawal</button>
+  </section>
+  <div class="footer">© 2026 Moneyshort. Share responsibly. Earnings depend on valid traffic and provider rules.</div>
+</div>
+
+<div class="modal" id="authModal" onclick="if(event.target===this)closeAuth()">
+  <div class="auth"><button class="close" onclick="closeAuth()">×</button><h2 id="authTitle">Welcome back</h2><p class="sub" id="authHint">Log in to your Moneyshort account.</p><input id="email" type="email" autocomplete="email" placeholder="Email address"><input id="password" type="password" autocomplete="current-password" placeholder="Password (minimum 6 characters)"><button class="btn primary" id="authSubmit" onclick="submitAuth()">Login</button><p id="authError" role="alert" style="color:var(--danger);font-size:13px;line-height:1.5"></p><p style="font-size:13px;color:var(--muted);text-align:center"><button type="button" class="close" id="authSwitch" style="float:none;font-size:13px;color:var(--green)" onclick="switchAuth()">Create a new account</button></p></div>
+</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+import {
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+  signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/13.1.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAA_6bxIhj0FhfxdCn1ccOuIyoiWXZgcsI",
+  authDomain: "moneyshort-7c656.firebaseapp.com",
+  projectId: "moneyshort-7c656",
+  storageBucket: "moneyshort-7c656.firebasestorage.app",
+  messagingSenderId: "689144274770",
+  appId: "1:689144274770:web:6319592a234ce6ffee248b",
+  measurementId: "G-9PXSZNYS6C"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+let authMode = "login";
+let demoLinks = [];
+
+window.openAuth = function(mode) {
+  authMode = mode;
+  document.getElementById('authTitle').textContent = mode === 'register' ? 'Create your account' : 'Welcome back';
+  document.getElementById('authHint').textContent = mode === 'register' ? 'Create a Moneyshort account with your email.' : 'Log in to your Moneyshort account.';
+  document.getElementById('authSubmit').textContent = mode === 'register' ? 'Create account' : 'Login';
+  document.getElementById('authSwitch').textContent = mode === 'register' ? 'Already have an account? Login' : 'Create a new account';
+  document.getElementById('authError').textContent = '';
+  document.getElementById('authModal').style.display = 'flex';
+};
+window.closeAuth = function() { document.getElementById('authModal').style.display = 'none'; };
+window.switchAuth = function() { window.openAuth(authMode === 'register' ? 'login' : 'register'); };
+
+window.submitAuth = async function() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const error = document.getElementById('authError');
+  const button = document.getElementById('authSubmit');
+  error.textContent = '';
+  if (!email || !password) { error.textContent = 'Please enter your email and password.'; return; }
+  if (authMode === 'register' && password.length < 6) { error.textContent = 'Password must be at least 6 characters.'; return; }
+  button.disabled = true;
+  button.textContent = 'Please wait...';
+  try {
+    if (authMode === 'register') await createUserWithEmailAndPassword(auth, email, password);
+    else await signInWithEmailAndPassword(auth, email, password);
+    window.closeAuth();
+    document.getElementById('password').value = '';
+  } catch (e) {
+    const messages = {
+      'auth/email-already-in-use': 'This email already has an account. Please log in.',
+      'auth/invalid-email': 'Please enter a valid email address.',
+      'auth/weak-password': 'Choose a stronger password with at least 6 characters.',
+      'auth/user-not-found': 'No account found for this email. Please sign up.',
+      'auth/wrong-password': 'Incorrect password. Please try again.',
+      'auth/invalid-credential': 'Email or password is incorrect.',
+      'auth/too-many-requests': 'Too many attempts. Please wait and try again.',
+      'auth/network-request-failed': 'Network error. Check your internet connection.'
+    };
+    error.textContent = messages[e.code] || ('Could not complete account request: ' + e.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = authMode === 'register' ? 'Create account' : 'Login';
+  }
+};
+window.logoutUser = async function() {
+  try { await signOut(auth); }
+  catch (e) { alert('Could not log out: ' + e.message); }
+};
+onAuthStateChanged(auth, user => {
+  document.getElementById('authActions').style.display = user ? 'none' : 'flex';
+  document.getElementById('userActions').style.display = user ? 'flex' : 'none';
+  document.getElementById('userEmail').textContent = user ? user.email : '';
+  document.getElementById('statusNotice').innerHTML = user
+    ? '<b>Signed in:</b> ' + escapeHtml(user.email) + '. Your Firebase account is active. Link tracking and withdrawals are not enabled yet.'
+    : '<b>Account system:</b> Sign up or log in to access your account. Link shortening, verified visits and withdrawals still require their own secure API/backend integration.';
+});
+window.createLink = function() {
+  const input = document.getElementById('destination'), value = input.value.trim();
+  if (!auth.currentUser) { alert('Please log in before creating links.'); window.openAuth('login'); return; }
+  if (!value) { alert('Please paste a destination URL first.'); return; }
+  try { const u = new URL(value); if (!['http:','https:'].includes(u.protocol)) throw new Error(); }
+  catch(e) { alert('Please enter a valid URL starting with https://'); return; }
+  const code = Math.random().toString(36).slice(2,8);
+  const short = 'API connection pending — ' + code;
+  demoLinks.unshift({destination:value,short});
+  document.getElementById('links').textContent = demoLinks.length;
+  document.getElementById('linkRows').innerHTML = demoLinks.map(x => `<tr><td>${escapeHtml(x.destination)}</td><td>${escapeHtml(x.short)}</td><td>—</td><td><span class="pill">Preview only</span></td></tr>`).join('');
+  const result = document.getElementById('result'); result.style.display='block'; result.textContent='Preview created: '+short+' (not a working redirect yet)';
+  input.value='';
+};
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>
